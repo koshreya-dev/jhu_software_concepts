@@ -1,6 +1,22 @@
-<nav>
-  <ul>
-    <li><a href="{{ url_for('pages.home') }}">Home</a></li>
-    <li><a href="{{ url_for('pages.about') }}">About</a></li>
+<nav style="background-color: #4CAF50; padding: 10px;">
+  <ul style="list-style: none; margin: 0; padding: 0; display: flex; justify-content: flex-end; gap: 20px;">
+    <li>
+      <a href="{{ url_for('pages.home') }}" 
+         style="color: white; text-decoration: none; {% if request.path == url_for('pages.home') %}font-weight: bold; border-bottom: 2px solid yellow;{% endif %}">
+         Home
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('pages.contact') }}"
+        style="color: white; text-decoration: none; {% if request.path == url_for('pages.contact') %}font-weight: bold; border-bottom: 2px solid yellow;{% endif %}">
+         Contact
+      </a>
+    </li>
+    <li>
+      <a href="{{ url_for('pages.projects') }}"
+         style="color: white; text-decoration: none; {% if request.path == url_for('pages.projects') %}font-weight: bold; border-bottom: 2px solid yellow;{% endif %}">
+         Projects
+      </a>
+    </li>
   </ul>
 </nav>

@@ -1,11 +1,26 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h2>{% block title %}Home{% endblock title %}</h2>
+  <h2>{% block title %}Welcome to my website!{% endblock title %}</h2>
 {% endblock header %}
 
 {% block content %}
-  <p>
-    Learn more about this project by visiting the <a href="{{ url_for('pages.about') }}">About page</a>.
-  </p>
+  <div style="display: flex; align-items: flex-start; gap: 20px;">
+    <!-- Bio section on the left -->
+    <div style="flex: 1;">
+      <h3>About Me</h3>
+      <p><strong>M.S. Data Science Student at Johns Hopkins University</strong></p>
+      <p>I’m a Data Scientist at USAA based out of San Antonio, TX. My background is in actuarial science and economics, 
+        and I develop AI models for the CFO Office working with a variety of indsutries- from Global Sourcing and Procurement to Legal Consulting. I have about 5 years of experience building 
+        and enhancing machine learning models for mostly financial institutions.A fun fact about me is that I like to explore different parts of the world. 
+        Most recently I backpacked across 6 countries in 10 days! I also like to play the violin and read in my free time. If you'd like to connect, you can find my contact information at <a href="{{ url_for('pages.contact') }}">Contact page</a>. </p>
+    </div>
+
+    <!-- Image section on the right -->
+    <div style="flex: 1;">
+      <img src="{{ url_for('static', filename='jhu_pic.jpg') }}" 
+           alt="Shreya Kodati"
+           style="width: 80%; height: auto; border-radius: 8px;">
+    </div>
+  </div>
 {% endblock content %}

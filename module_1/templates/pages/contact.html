@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Contact Me{% endblock title %}</h2>
+{% endblock header %}
+
+{% block content %}
+  <p>
+    <strong>Email:</strong> 
+    <span id="email-text">skodati1@jh.edu</span>
+    <button id="copy-btn">Copy</button>
+  </p>
+  <p>
+    <strong>LinkedIn:</strong> 
+    <a href="https://www.linkedin.com/in/shreya-kodati-1399b2179" target="_blank">Shreya Kodati</a>
+  </p>
+
+  <p id="copy-message" style="color: green; display: none;">Email copied to clipboard!</p>
+
+  <!-- Add JS for copy functionality -->
+  <script>
+    const copyBtn = document.getElementById("copy-btn");
+    const emailText = document.getElementById("email-text");
+    const copyMessage = document.getElementById("copy-message");
+
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(emailText.textContent)
+        .then(() => {
+          copyMessage.style.display = "block";
+          setTimeout(() => { copyMessage.style.display = "none"; }, 2000);
+        })
+        .catch(err => {
+          alert("Failed to copy email");
+        });
+    });
+  </script>
+{% endblock content %}

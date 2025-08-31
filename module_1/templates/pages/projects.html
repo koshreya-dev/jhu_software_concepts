@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h2>{% block title %}Projects{% endblock title %}</h2>
+{% endblock header %}
+
+{% block content %}
+  
+  <!-- Table of Contents (left column) -->
+  <div style="margin-bottom: 30px; text-align: left;">
+    <h3>Table of Contents</h3>
+    <ul id="toc" style="list-style-type: none; padding-left: 0;">
+      <!-- JS will populate TOC dynamically -->
+    </ul>
+  </div>
+
+  <!-- Project Content (right column) -->
+  <div style="flex: 1;">
+    <section>
+      <h3 id="project1"> Module 1 Project</h3>
+      <p><strong>Project Name:</strong> Personal Website</p>
+      <p><strong>Project Overview:</strong> This project involves configuring and using a remote code repository GitHub to use to store, track, and
+    collaborate on all homework assignments for this semester. I also constructed this flask website to display my completed modules.</p>
+      <p><strong>Github Link:</strong> <a href="https://github.com/koshreya-dev/jhu_software_concepts.git" target="_blank">View on Github</a></p>
+    </section>
+
+    <section>
+      <h3 id="project2">Module 2 Project</h3>
+      <p><strong>Title:</strong>  </p>
+      <p><strong>Details:</strong> ...</p>
+      <p><strong>Github Link:</strong> <a href="#" target="_blank">View on Github</a></p>
+    </section>
+
+    <section>
+      <h3 id="project3">Module 3 Project</h3>
+      <p><strong>Title:</strong>  </p>
+      <p><strong>Details:</strong>  </p>
+      <p><strong>Github Link:</strong> <a href="#" target="_blank">View on Github</a></p>
+    </section>
+  </div>
+</div>
+
+<!-- JavaScript to generate dynamic TOC -->
+<script>
+  const toc = document.getElementById('toc');
+  const headers = document.querySelectorAll('h3[id]');
+
+  headers.forEach(header => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = `#${header.id}`;
+    a.textContent = header.textContent;
+    li.appendChild(a);
+    toc.appendChild(li);
+  });
+</script>
+{% endblock content %}
+
