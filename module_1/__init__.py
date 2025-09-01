@@ -1,3 +1,5 @@
+# Create Flask app using blueprint
+
 from flask import Flask
 
 from module_1 import pages

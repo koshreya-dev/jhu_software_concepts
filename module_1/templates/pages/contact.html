@@ -4,6 +4,7 @@
   <h2>{% block title %}Contact Me{% endblock title %}</h2>
 {% endblock header %}
 
+<!-- Set email and LinkedIn -->
 {% block content %}
   <p>
     <strong>Email:</strong> 
@@ -16,8 +17,8 @@
   </p>
 
   <p id="copy-message" style="color: green; display: none;">Email copied to clipboard!</p>
-
-  <!-- Add JS for copy functionality -->
+  
+  <!-- Add JS for copy email functionality -->
   <script>
     const copyBtn = document.getElementById("copy-btn");
     const emailText = document.getElementById("email-text");

@@ -2,7 +2,7 @@
   box-sizing: border-box;
 }
 
-/* Animated gradient background */
+/* Code to create the dynamic background */
 body {
   font-family: sans-serif;
   font-size: 20px;
@@ -13,6 +13,7 @@ body {
   animation: gradientBG 15s ease infinite;
 }
 
+/* Background gradient positions */
 @keyframes gradientBG {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -30,6 +31,7 @@ a:hover {
   color: #0056b3;
 }
 
+/* Navigation Settings */
 nav {
   background-color: #e91e63; /* changed to pink */
   padding: 10px;

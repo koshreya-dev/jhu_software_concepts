@@ -4,6 +4,7 @@
   <h2>{% block title %}Welcome to my website!{% endblock title %}</h2>
 {% endblock header %}
 
+<!-- About me page contents -->
 {% block content %}
   <div style="display: flex; align-items: flex-start; gap: 20px;">
     <!-- Bio section on the left -->
@@ -16,7 +17,7 @@
         Most recently I backpacked across 6 countries in 10 days! I also like to play the violin and read in my free time. If you'd like to connect, you can find my contact information at <a href="{{ url_for('pages.contact') }}">Contact page</a>. </p>
     </div>
 
-    <!-- Image section on the right -->
+    <!-- Put image on the right -->
     <div style="flex: 1;">
       <img src="{{ url_for('static', filename='jhu_pic.jpg') }}" 
            alt="Shreya Kodati"
