@@ -1,0 +1,9 @@
+Flask>=2.3,<4
+huggingface_hub>=0.23.0
+llama-cpp-python>=0.2.90,<0.3.0
+bs4
+json
+os
+urllib
+urllib3
+re
