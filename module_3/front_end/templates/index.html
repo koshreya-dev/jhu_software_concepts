@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{% block title %}Analysis{% endblock %}</h1>
+
+  <div class="card">
+    <h3>How many entries do you have in your database who have applied for Fall 2024?</h3>
+    <p><strong>Answer:</strong> Applicant count: {{ applicant_count }}</p>
+  </div>
+
+  <div class="card">
+    <h3>What percentage of entries are from International students (not American or Other)?</h3>
+    <p><strong>Answer:</strong> Percent International: {{ percent_international }}%</p>
+  </div>
+
+  <div class="card">
+    <h3>What is the average GPA, GRE, GRE V, GRE AW of applicants who provided these metrics?</h3>
+    <p><strong>Answer:</strong> Average GPA: {{ avg_gpa }}, Average GRE: {{ avg_gre }}, Average GRE V: {{ avg_gre_v }}, Average GRE AW: {{ avg_gre_aw }}</p>
+  </div>
+
+  <div class="card">
+    <h3>What is the average GPA of American students in Fall 2024?</h3>
+    <p><strong>Answer:</strong> Average GPA American: {{ avg_gpa_american }}</p>
+  </div>
+
+  <div class="card">
+    <h3>What percent of entries for Fall 2024 are Acceptances?</h3>
+    <p><strong>Answer:</strong> Acceptance percent: {{ acceptance_percent }}%</p>
+  </div>
+
+  <div class="card">
+    <h3>What is the average GPA of applicants who applied for Fall 2024 who got accepted?</h3>
+    <p><strong>Answer:</strong> Average GPA Acceptance: {{ avg_gpa_accepted }}</p>
+  </div>
+{% endblock %}

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset = "UTF-8" />
+  <title>Grad School Cafe Data Analysis</title>
+  <style>
+    .site-title {
+    margin: 10px 30px;
+    font-family: 'Times New Roman';
+    font-size: 20px;
+    font-weight: normal;
+    color: #8d8d8dff;
+  }
+
+    .card {
+    background-color: #f7f4f4;
+    padding: 15px;
+    margin: 20px 0;
+  }
+
+  .card h3 {
+    margin-top: 0;
+  } 
+
+  .card p {
+  font-style: italic;  /* Italicize answers */
+  font-weight: normal; /* Optional: unbold the word 'Answer:' */
+  }
+  </style>
+</head>
+<body>
+  <header>
+    <h2 class="site-title">Grad School Cafe Data Analysis</h2>
+  </header>
+
+  <hr>
+  <div class= "content">
+    {% block content %} {% endblock %}
+  </div>
+</body>
+</html>

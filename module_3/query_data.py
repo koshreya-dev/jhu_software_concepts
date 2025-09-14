@@ -9,23 +9,18 @@ conn = pool.getconn()
 
 with conn.cursor() as cur:
 
-    # Query 1: Total Applicant count
     cur.execute("SELECT COUNT(*) FROM applicants;")
     total_count = cur.fetchone()[0]
 
-    # Query 2: International count
     cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international = 'International';")
     international_count = cur.fetchone()[0]
 
-    # Query 3: US count
     cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international = 'American';")
     us_count = cur.fetchone()[0]
 
-    # Query 4: Other count
     cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international != 'International' AND us_or_international != 'American';")
     other_count = cur.fetchone()[0]
 
-    # Query 5: Percent International
     if total_count > 0:
         percent_international = (international_count / total_count) * 100
     else:
@@ -89,6 +84,18 @@ with conn.cursor() as cur:
             AND llm_generated_program = 'Computer Science';
     """)
     jhu_masters_cs_count = cur.fetchone()[0]
+    
+    # Query 11: Georgetown University, PhD in Computer Science, 2025
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM applicants
+        WHERE
+            llm_generated_university = 'Georgetown University'
+            AND degree = 'PhD'
+            AND llm_generated_program = 'Computer Science'
+            AND term like '%2025';
+    """)
+    gtu_phd_25 = cur.fetchone()[0]
 
     # --- Terminal Output ---
     print(f"Applicant count: {total_count}")
@@ -102,6 +109,7 @@ with conn.cursor() as cur:
     print(f"Acceptance percent: {acceptance_percent}%")
     print(f"Average GPA Acceptance: {avg_gpa_accepted}")
     print(f"JHU Masters Computer Science count: {jhu_masters_cs_count}")
+    print(f"Georgetown PhD 2025 Computer Science count: {gtu_phd_25}")
 
 
 
