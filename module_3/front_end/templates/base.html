@@ -31,8 +31,30 @@
 <body>
   <header>
     <h2 class="site-title">Grad School Cafe Data Analysis</h2>
+    <div style="position: absolute; top: 15px; right: 20px;">
+      <!-- Pull Data button -->
+      <form action="/pull" method="POST" style="display:inline; margin-left: 10px;">
+        <button type="submit">Pull Data</button>
+      </form>
+      <!-- Update Analysis button -->
+      <form action="/update" method="POST" style="display:inline;">
+        <button type="submit">Update Analysis</button>
+      </form>
+  </div>
   </header>
-
+  <p style="font-size: small; color: gray; position: absolute; top: 40px; right: 20px;"<br>
+    <strong>Pull Data</strong>: Scrape new results from GradCafe and insert into the database.<br>
+    <strong>Update Analysis</strong>: Refresh the page with the latest analysis.
+  </p>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul style="color: green;">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
   <hr>
   <div class= "content">
     {% block content %} {% endblock %}

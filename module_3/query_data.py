@@ -1,7 +1,15 @@
+"""
+Provides SQL queries for analyzing the applicant data. 
+Contains parameterized queries for filtering by program, degree, status, and date ranges. 
+Allows exporting query results to JSON or printing directly to the console.
+"""
+
+
 import os
 import psycopg
 import psycopg_pool
 
+#Set up connection with psycopg connection pool
 pool = psycopg_pool.ConnectionPool(os.environ['DATABASE_URL'])
 
 #Get a connection from the pool.
@@ -9,18 +17,23 @@ conn = pool.getconn()
 
 with conn.cursor() as cur:
 
+    # Query 1: Count of all students
     cur.execute("SELECT COUNT(*) FROM applicants;")
     total_count = cur.fetchone()[0]
 
+    # Query 2: Count of international students
     cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international = 'International';")
     international_count = cur.fetchone()[0]
 
+    # Query 3: Count of American students
     cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international = 'American';")
     us_count = cur.fetchone()[0]
 
+    # Query 4: Count of neither American nor international students
     cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international != 'International' AND us_or_international != 'American';")
     other_count = cur.fetchone()[0]
 
+    # Query 5: Percentage of international students
     if total_count > 0:
         percent_international = (international_count / total_count) * 100
     else:
@@ -96,6 +109,30 @@ with conn.cursor() as cur:
             AND term like '%2025';
     """)
     gtu_phd_25 = cur.fetchone()[0]
+    
+    # Query 12: How many entries from 2023 are acceptances from \
+        # applicants who applied to University of Chicago for a \
+            # Masters in Computer Science?
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM applicants
+        WHERE
+            llm_generated_university = 'University of Chicago'
+            AND degree = 'Masters'
+            AND llm_generated_program = 'Computer Science'
+            AND term like '%2023';
+    """)
+    uc_cs_23 = cur.fetchone()[0]
+    
+    # Query 13: What is the average admit GPA of PhD admits in Boston University?
+    cur.execute("""
+        SELECT AVG(gpa)
+        FROM applicants
+        WHERE
+            llm_generated_university = 'Boston University'
+            AND degree = 'PhD';
+            """)
+    BU_phd = cur.fetchone()[0]
 
     # --- Terminal Output ---
     print(f"Applicant count: {total_count}")
@@ -110,7 +147,8 @@ with conn.cursor() as cur:
     print(f"Average GPA Acceptance: {avg_gpa_accepted}")
     print(f"JHU Masters Computer Science count: {jhu_masters_cs_count}")
     print(f"Georgetown PhD 2025 Computer Science count: {gtu_phd_25}")
-
+    print(f"UChicago Masters 2023 Computer Science count: {uc_cs_23}")
+    print(f"Average GPA of PhD Acceptance at Boston University: {BU_phd}")
 
 
 #   # Calculate the average GPA needed for each course

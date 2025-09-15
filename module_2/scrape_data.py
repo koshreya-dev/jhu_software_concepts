@@ -64,17 +64,17 @@ def scrape_page(page=1):
 
     return rows
 
-def save_data(all_data):
+def save_data(all_data, file_path):
     """Save cleaned data into a json file"""
     
     # Save into module_2 folder
     os.makedirs("module_2", exist_ok=True)
-    with open("module_2/applicant_data.json", "w", encoding="utf-8") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         json.dump(all_data, f, indent=4)
         
-    return print(f"Saved {len(all_data)} rows to module_2\\applicant_data.json")
+    return print(f"Saved {len(all_data)} rows to {file_path}")
 
-def load_data(filepath="module_2/applicant_data.json"):
+def load_data(filepath):
     """
     Load applicant data from JSON file. If the file exists, 
     returns the data and prints the number of entries.
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         all_data.extend(scrape_page(p))
 
     # Outputinto json
-    save_data(all_data)
+    save_data(all_data, file_path = "module_2/applicant_data.json")
     
     # Confirm that data is loaded correctly
-    load_data()
+    load_data("module_2/applicant_data.json")

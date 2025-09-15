@@ -1,7 +1,7 @@
 # Module 2 Assignment 
 Name: Shreya Kodati (skodati1)
 
-Module Info: Module 1 Personal Website Due on 09/7/2025 at 11:59 EST
+Module Info: Module 2 Due on 09/7/2025 at 11:59 EST
 
 Approach: 
 
