@@ -1,21 +1,16 @@
 version: 2
 
-# Build OS and Python version
 build:
-  os: ubuntu-24.04
+  os: "ubuntu-24.04"
   tools:
     python: "3.13"
-  # Set environment variables here
-  environment:
-    DATABASE_URL: postgresql://postgres:jhu123@localhost:5432/postgres
+  jobs:
+    post_install:
+      # Install dependencies from your requirements.txt
+      - pip install -r module_4/docs/requirements.txt
+      # Optionally, set DATABASE_URL as an environment variable for the build
+      - export DATABASE_URL=postgresql://postgres:jhu123@localhost:5432/postgres
 
-# Python environment
-python:
-  install:
-    - method: pip
-      path: module_4/docs/requirements.txt
-
-# Sphinx settings
 sphinx:
   configuration: module_4/docs/source/conf.py
   builder_name: html
