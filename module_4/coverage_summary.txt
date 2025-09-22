@@ -1,0 +1,91 @@
+====================================== test session starts =======================================
+platform win32 -- Python 3.13.3, pytest-8.4.2, pluggy-1.6.0
+rootdir: C:\Users\Shreya\jhu_software_concepts\module_4
+plugins: cov-7.0.0
+collected 11 items                                                                                
+
+tests\test_analysis_format.py .                                                             [  9%]
+tests\test_buttons.py ....                                                                  [ 45%]
+tests\test_db_insert.py ...                                                                 [ 72%]
+tests\test_flask_page.py .                                                                  [ 81%]
+tests\test_integration_end_to_end.py ..                                                     [100%]
+
+======================================== warnings summary ======================================== 
+tests\test_analysis_format.py:16
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_analysis_format.py:16: PytestUnknownMarkWarning: Unknown pytest.mark.analysis - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.analysis
+
+tests\test_buttons.py:15
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_buttons.py:15: PytestUnknownMarkWarning: Unknown pytest.mark.buttons - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.buttons
+
+tests\test_buttons.py:48
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_buttons.py:48: PytestUnknownMarkWarning: Unknown pytest.mark.buttons - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.buttons
+
+tests\test_buttons.py:69
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_buttons.py:69: PytestUnknownMarkWarning: Unknown pytest.mark.buttons - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.buttons
+
+tests\test_buttons.py:99
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_buttons.py:99: PytestUnknownMarkWarning: Unknown pytest.mark.buttons - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.buttons
+
+tests\test_db_insert.py:14
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_db_insert.py:14: PytestUnknownMarkWarning: Unknown pytest.mark.db - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.db
+
+tests\test_db_insert.py:52
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_db_insert.py:52: PytestUnknownMarkWarning: Unknown pytest.mark.db - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.db
+
+tests\test_db_insert.py:74
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_db_insert.py:74: PytestUnknownMarkWarning: Unknown pytest.mark.db - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.db
+
+tests\test_flask_page.py:15
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_flask_page.py:15: PytestUnknownMarkWarning: Unknown pytest.mark.web - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.web
+
+tests\test_integration_end_to_end.py:16
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_integration_end_to_end.py:16: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+tests\test_integration_end_to_end.py:64
+  C:\Users\Shreya\jhu_software_concepts\module_4\tests\test_integration_end_to_end.py:64: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+========================================= tests coverage ========================================= 
+________________________ coverage: platform win32, python 3.13.3-final-0 _________________________ 
+
+Name                                   Stmts   Miss  Cover
+----------------------------------------------------------
+__init__.py                                0      0   100%
+src\__init__.py                            0      0   100%
+src\clean.py                              57     57     0%
+src\front_end\__init__.py                  4      2    50%
+src\front_end\app.py                      76     58    24%
+src\front_end\app_factory.py              25      0   100%
+src\load_data.py                          25     25     0%
+src\query_data.py                         52     52     0%
+src\reload_data.py                        23     23     0%
+src\scrape_data.py                        58     58     0%
+src\update.py                            124    124     0%
+tests\__init__.py                          0      0   100%
+tests\test_analysis_format.py             29      6    79%
+tests\test_buttons.py                     69      0   100%
+tests\test_db_insert.py                   59      0   100%
+tests\test_flask_page.py                  29      5    83%
+tests\test_integration_end_to_end.py      52      1    98%
+----------------------------------------------------------
+TOTAL                                    682    411    40%
+================================ 11 passed, 11 warnings in 1.10s ================================= 
+couldn't stop thread 'pool-1-worker-0' within 5.0 seconds
+hint: you can try to call 'close()' explicitly or to use the pool as context manager
+couldn't stop thread 'pool-1-worker-1' within 5.0 seconds
+hint: you can try to call 'close()' explicitly or to use the pool as context manager
+couldn't stop thread 'pool-1-worker-2' within 5.0 seconds
+hint: you can try to call 'close()' explicitly or to use the pool as context manager
+couldn't stop thread 'pool-1-scheduler' within 5.0 seconds
+hint: you can try to call 'close()' explicitly or to use the pool as context manager
