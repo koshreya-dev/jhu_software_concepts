@@ -1,4 +1,4 @@
-# .readthedocs.yaml
+# .readthedocs.yaml at repo root: jhu_software_concepts/.readthedocs.yaml
 version: 2
 
 # Python environment
@@ -8,10 +8,12 @@ python:
     - method: pip
       path: module_4/docs/requirements.txt
 
-# Environment variables for the build
+# Environment variables (optional, but safe to have for docs)
 env:
   DATABASE_URL: postgresql://postgres:jhu123@localhost:5432/postgres
 
 # Sphinx settings
 sphinx:
   configuration: module_4/docs/source/conf.py
+  # Tell RTD to skip building notebooks or executing code that may fail
+  builder: html
