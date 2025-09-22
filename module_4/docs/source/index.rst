@@ -10,9 +10,10 @@ Overview & Setup
 
 Architecture
 ------------
-- **Web layer:** Flask routes serve ``/analysis``, ``/pull-data``, ``/update-analysis``.
+- **Web layer:** Flask routes served by ``flask_app.py`` provide endpoints for ``/analysis``, ``/pull-data``, and ``/update-analysis``. Handles HTTP requests,  response formatting, and busy-state gating.
 - **ETL layer:** ``scrape.py``, ``clean.py``, ``load_data.py`` handle scraping, cleaning, and inserting data.
-- **Database layer:** PostgreSQL stores applicant data and supports queries for analysis.
+- **Database/query layer:** ``query_data.py`` provides functions to query PostgreSQL and return structured data for analysis and page rendering.
+- **Database layer:** PostgreSQL stores applicant data and supports queries used by the analysis and front-end layers.
 
 API Reference
 -------------
