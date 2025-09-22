@@ -1,22 +1,23 @@
 # .readthedocs.yaml at repo root: jhu_software_concepts/.readthedocs.yaml
 version: 2
 
+# Build OS and Python version
 build:
   os: ubuntu-24.04
   tools:
-    python: "3.12"
-    
+    python: "3.13"
+
 # Python environment
 python:
-  version: 3.13
   install:
-    - requirements: module_4/docs/requirements.txt
+    - method: pip
+      path: module_4/docs/requirements.txt
 
-# Environment variables (optional, but safe to have for docs)
+# Environment variables for the build
 env:
   DATABASE_URL: postgresql://postgres:jhu123@localhost:5432/postgres
 
 # Sphinx settings
 sphinx:
   configuration: module_4/docs/source/conf.py
-
+  builder_name: html
