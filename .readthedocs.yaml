@@ -1,10 +1,12 @@
+# .readthedocs.yaml at repo root: jhu_software_concepts/.readthedocs.yaml
 version: 2
 
-sphinx:
-  configuration: module_4/docs/source/conf.py
-
+# Use Python 3.13
 python:
   version: 3.13
   install:
     - method: pip
       path: module_4/docs/requirements.txt
+
+sphinx:
+  configuration: module_4/docs/source/conf.py
