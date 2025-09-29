@@ -6,7 +6,7 @@ Cleans up formatting issues and merges new rows into the database.
 import os
 import json
 import psycopg_pool
-
+from .utils import create_record_from_json
 
 # Use the 'DATABASE_URL' environment variable to connect to the database.
 # pylint: disable=consider-using-sys-exit
@@ -23,24 +23,7 @@ DATA_TO_INSERT = []
 try:
     with open(JSONL_FILE_PATH, 'r', encoding='utf-8') as f:
         for line in f:
-            json_data = json.loads(line)
-            # Iterate through json and get respective fields
-            record = (
-                json_data.get('program'),
-                json_data.get('comments'),
-                json_data.get('date_added'),
-                json_data.get('url'),
-                json_data.get('status'),
-                json_data.get('term'),
-                json_data.get('US/International'),
-                json_data.get('GPA'),
-                json_data.get('GRE'),
-                json_data.get('GRE V'),
-                json_data.get('GRE AW'),
-                json_data.get('Degree'),
-                json_data.get('llm-generated-program'),
-                json_data.get('llm-generated-university')
-            )
+            record = create_record_from_json(line)
             DATA_TO_INSERT.append(record)
 except FileNotFoundError:
     print(f"Error: The file {JSONL_FILE_PATH} was not found.")

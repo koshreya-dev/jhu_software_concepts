@@ -14,6 +14,7 @@ information.
 import os
 import json
 import psycopg_pool
+from .utils import create_record_from_json
 
 def load_applicant_data(database_url: str, jsonl_file_path: str):
     """
@@ -64,23 +65,7 @@ def load_applicant_data(database_url: str, jsonl_file_path: str):
                     line = line.strip()
                     if line:  # Ensure the line is not empty
                         try:
-                            json_data = json.loads(line)
-                            record = (
-                                json_data.get('program'),
-                                json_data.get('comments'),
-                                json_data.get('date_added'),
-                                json_data.get('url'),
-                                json_data.get('status'),
-                                json_data.get('term'),
-                                json_data.get('US/International'),
-                                json_data.get('GPA'),
-                                json_data.get('GRE'),
-                                json_data.get('GRE V'),
-                                json_data.get('GRE AW'),
-                                json_data.get('Degree'),
-                                json_data.get('llm-generated-program'),
-                                json_data.get('llm-generated-university')
-                            )
+                            record = create_record_from_json(line)
                             data_to_insert.append(record)
                         except json.JSONDecodeError as e:
                             print(f"Skipping malformed JSON line: {e}")

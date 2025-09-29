@@ -7,8 +7,8 @@ Stores results into JSON files, which are later inserted into the database via r
 import json
 import os
 import subprocess
-import urllib3  # Needed to create the PoolManager instance
 from .scrape_data import scrape_page
+from .utils import HTTP_POOL_MANAGER, DEFAULT_USER_AGENT
 
 # Module 2 just means old file and module 3 means file after updating.
 # Naming has no effect on refreshing data beyond this module
@@ -161,12 +161,8 @@ def update_data():
     stop_scraping = False
 
     # Leverage the pattern from scrape_data.py to initialize HTTP objects
-    http_pool_manager = urllib3.PoolManager()
-    user_agent = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/139.0.0.0 Safari/537.36"
-    )
+    http_pool_manager = HTTP_POOL_MANAGER
+    user_agent = DEFAULT_USER_AGENT
 
     for page in range(1, MAX_PAGE + 1):
         # Now, call scrape_page with the required arguments

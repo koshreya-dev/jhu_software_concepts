@@ -14,9 +14,9 @@ from urllib import robotparser
 import urllib.error
 import urllib3
 from bs4 import BeautifulSoup
-# The 'clean' module is likely in the same directory. The relative import is
-# the correct way to handle this in a package structure.
 from .clean import clean_data
+from .utils import HTTP_POOL_MANAGER, DEFAULT_USER_AGENT
+
 
 
 def _robot_parser(site_url, agent):
@@ -107,12 +107,8 @@ def load_data(filepath):
 def main():
     """Main function to run the scraping and data saving process."""
     # Initialize urllib3 PoolManager and USER_AGENT
-    http_pool_manager = urllib3.PoolManager()
-    user_agent = (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/139.0.0.0 Safari/537.36"
-    )
+    http_pool_manager = HTTP_POOL_MANAGER
+    user_agent = DEFAULT_USER_AGENT
 
     all_data = []
     file_path = "module_2/applicant_data.json"
