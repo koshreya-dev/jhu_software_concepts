@@ -21,6 +21,7 @@ from module_5.src.query_helpers import (
     query_avg_all_metrics
 )
 
+
 # pylint: disable=W0603, W0718, W0602, R0914, R0915
 
 
