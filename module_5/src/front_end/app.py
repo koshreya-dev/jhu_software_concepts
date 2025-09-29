@@ -27,7 +27,7 @@ from module_5.src.query_helpers import (
 
 # Initialize the Flask application.
 app = Flask(__name__)
-app.secret_key = "supersecretkey"  # Needed for flash messages.
+app.secret_key = ""  # Needed for flash messages.
 
 # Use a connection pool for efficient database connections.
 pool = psycopg_pool.ConnectionPool(os.environ['DATABASE_URL'])
