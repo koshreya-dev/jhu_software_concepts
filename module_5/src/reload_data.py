@@ -6,14 +6,20 @@ Cleans up formatting issues and merges new rows into the database.
 import os
 import json
 import psycopg_pool
+from .sql_utils import build_insert_query
 from .utils import create_record_from_json
 
-# Use the 'DATABASE_URL' environment variable to connect to the database.
 # pylint: disable=consider-using-sys-exit
-pool = psycopg_pool.ConnectionPool(os.environ['DATABASE_URL'], min_size=0, max_size=80)
+
+# Use the 'DATABASE_URL' environment variable to connect to the database.
+pool = psycopg_pool.ConnectionPool(
+    os.environ['DATABASE_URL'], min_size=0, max_size=80
+)
 
 # Use dataset that is created from running update_data.py
-JSONL_FILE_PATH = r'C:\Users\Shreya\jhu_software_concepts\module_3\temp_new_rows_llm.json'
+JSONL_FILE_PATH = (
+    r'C:\Users\Shreya\jhu_software_concepts\module_3\temp_new_rows_llm.json'
+)
 TABLE_NAME = 'applicants'
 
 # Empty list to populate
@@ -47,13 +53,16 @@ else:
 
     with pool.connection() as conn:
         with conn.cursor() as cur:
+            # Use SQL composition for safe query building
+            insert_query = build_insert_query(TABLE_NAME, columns)
+
             # Use executemany for bulk insertion
-            SQL_COMMAND = (
-                f"INSERT INTO {TABLE_NAME} ({', '.join(columns)}) "
-                f"VALUES ({', '.join(['%s'] * len(columns))})"
+            cur.executemany(insert_query, DATA_TO_INSERT)
+            INSERTED_COUNT = len(DATA_TO_INSERT)
+            print(
+                f"Successfully inserted {INSERTED_COUNT} records "
+                f"into {TABLE_NAME}"
             )
-            cur.executemany(SQL_COMMAND, DATA_TO_INSERT)
-            print(f"Successfully inserted {len(DATA_TO_INSERT)} records into {TABLE_NAME}")
 
 # Close the pool
 pool.close()

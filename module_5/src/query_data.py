@@ -1,10 +1,28 @@
 """
 Provides SQL queries for analyzing the applicant data.
-Contains parameterized queries for filtering by program, degree, status, and date ranges.
-Allows exporting query results to JSON or printing directly to the console.
+Contains parameterized queries for filtering by program, degree, status,
+and date ranges. Allows exporting query results to JSON or printing
+directly to the console.
 """
 import os
 import psycopg_pool
+from psycopg import sql
+from .sql_utils import (
+    build_count_query, build_avg_query,
+    build_where_equals, build_where_not_in
+)
+from .query_helpers import (
+    query_american_fall_2025_gpa,
+    query_fall_2025_accepted_count,
+    query_fall_2025_accepted_gpa,
+    query_university_program_degree,
+    query_university_program_degree_term,
+    query_avg_all_metrics
+)
+
+# Add a query result limit for safety
+QUERY_LIMIT = 1000000
+
 
 def _fetch_metrics(cur):
     """
@@ -12,86 +30,109 @@ def _fetch_metrics(cur):
     """
     metrics = {}
 
-    # Execute all queries
-    cur.execute("SELECT COUNT(*) FROM applicants;")
+    # Query 1: Total count
+    query = build_count_query('applicants', limit=QUERY_LIMIT)
+    cur.execute(query)
     metrics['total_count'] = cur.fetchone()[0]
 
-    cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international = 'International';")
+    # Query 2: International count
+    where_clause, params = build_where_equals(
+        'us_or_international', 'International'
+    )
+    query = build_count_query('applicants', where_clause, limit=QUERY_LIMIT)
+    cur.execute(query, params)
     metrics['international_count'] = cur.fetchone()[0]
 
-    cur.execute("SELECT COUNT(*) FROM applicants WHERE us_or_international = 'American';")
+    # Query 3: US count
+    where_clause, params = build_where_equals(
+        'us_or_international', 'American'
+    )
+    query = build_count_query('applicants', where_clause, limit=QUERY_LIMIT)
+    cur.execute(query, params)
     metrics['us_count'] = cur.fetchone()[0]
 
-    cur.execute("""
-        SELECT COUNT(*)
-        FROM applicants
-        WHERE us_or_international NOT IN ('International', 'American');
-    """)
+    # Query 4: Other count
+    where_clause, params = build_where_not_in(
+        'us_or_international', ['International', 'American']
+    )
+    query = build_count_query('applicants', where_clause, limit=QUERY_LIMIT)
+    cur.execute(query, params)
     metrics['other_count'] = cur.fetchone()[0]
 
-    cur.execute("""
-        SELECT AVG(gpa), AVG(gre), AVG(gre_v), AVG(gre_aw)
-        FROM applicants
-        WHERE gpa IS NOT NULL AND gre IS NOT NULL AND gre_v IS NOT NULL AND gre_aw IS NOT NULL;
-    """)
-    metrics['avg_metrics'] = cur.fetchone()
+    # Calculate percent international
+    if metrics['total_count'] > 0:
+        metrics['percent_international'] = (
+            (metrics['international_count'] / metrics['total_count']) * 100
+        )
+    else:
+        metrics['percent_international'] = 0
 
-    cur.execute("""
-        SELECT AVG(gpa) FROM applicants
-        WHERE us_or_international = 'American' AND term = 'Fall 2025' AND gpa IS NOT NULL;
-    """)
-    metrics['avg_gpa_american'] = cur.fetchone()[0]
+    # Query 5: Average metrics
+    metrics['avg_metrics'] = query_avg_all_metrics(cur, QUERY_LIMIT)
 
-    cur.execute("""
-        SELECT COUNT(*)
-        FROM applicants
-        WHERE term = 'Fall 2025' AND status LIKE 'Accepted%';
-    """)
-    metrics['acceptance_count'] = cur.fetchone()[0]
+    # Query 6: Average GPA American
+    metrics['avg_gpa_american'] = query_american_fall_2025_gpa(
+        cur, QUERY_LIMIT
+    )
 
-    cur.execute("SELECT COUNT(*) FROM applicants WHERE term = 'Fall 2025';")
+    # Query 7: Acceptance count
+    metrics['acceptance_count'] = query_fall_2025_accepted_count(
+        cur, QUERY_LIMIT
+    )
+
+    # Query 8: Fall 2025 total count
+    where_clause, params = build_where_equals('term', 'Fall 2025')
+    query = build_count_query('applicants', where_clause, limit=QUERY_LIMIT)
+    cur.execute(query, params)
     fall_2025_total_count = cur.fetchone()[0]
     metrics['fall_2025_total_count'] = fall_2025_total_count
-    metrics['acceptance_percent'] = (
-        (metrics['acceptance_count'] / fall_2025_total_count) * 100
-    ) if fall_2025_total_count > 0 else 0
+    if fall_2025_total_count > 0:
+        metrics['acceptance_percent'] = (
+            (metrics['acceptance_count'] / fall_2025_total_count) * 100
+        )
+    else:
+        metrics['acceptance_percent'] = 0
 
-    cur.execute("""
-        SELECT AVG(gpa) FROM applicants
-        WHERE term = 'Fall 2025' AND status LIKE 'Accepted%' AND gpa IS NOT NULL;
-    """)
-    metrics['avg_gpa_accepted'] = cur.fetchone()[0]
+    # Query 9: Average GPA accepted
+    metrics['avg_gpa_accepted'] = query_fall_2025_accepted_gpa(
+        cur, QUERY_LIMIT
+    )
 
-    cur.execute("""
-        SELECT COUNT(*) FROM applicants
-        WHERE llm_generated_university = 'Johns Hopkins University'
-        AND degree = 'Masters' AND llm_generated_program = 'Computer Science';
-    """)
-    metrics['jhu_masters_cs_count'] = cur.fetchone()[0]
+    # Query 10: JHU Masters CS count
+    metrics['jhu_masters_cs_count'] = query_university_program_degree(
+        cur, 'Johns Hopkins University', 'Masters',
+        'Computer Science', QUERY_LIMIT
+    )
 
-    cur.execute("""
-        SELECT COUNT(*) FROM applicants
-        WHERE llm_generated_university = 'Georgetown University'
-        AND degree = 'PhD' AND llm_generated_program = 'Computer Science'
-        AND term LIKE '%2025';
-    """)
-    metrics['gtu_phd_25'] = cur.fetchone()[0]
+    # Query 11: Georgetown PhD 2025
+    metrics['gtu_phd_25'] = query_university_program_degree_term(
+        cur, 'Georgetown University', 'PhD',
+        'Computer Science', '%2025', QUERY_LIMIT
+    )
 
-    cur.execute("""
-        SELECT COUNT(*) FROM applicants
-        WHERE llm_generated_university = 'University of Chicago'
-        AND degree = 'Masters' AND llm_generated_program = 'Computer Science'
-        AND term LIKE '%2023';
-    """)
-    metrics['uc_cs_23'] = cur.fetchone()[0]
+    # Query 12: UChicago Masters 2023
+    metrics['uc_cs_23'] = query_university_program_degree_term(
+        cur, 'University of Chicago', 'Masters',
+        'Computer Science', '%2023', QUERY_LIMIT
+    )
 
-    cur.execute("""
-        SELECT AVG(gpa) FROM applicants
-        WHERE llm_generated_university = 'Boston University' AND degree = 'PhD';
-    """)
+    # Query 13: Boston University PhD average GPA
+    where_clause, params = build_where_equals(
+        'llm_generated_university', 'Boston University'
+    )
+    where_clause2, params2 = build_where_equals('degree', 'PhD')
+    combined_clause = sql.SQL("{c1} AND {c2}").format(
+        c1=where_clause, c2=where_clause2
+    )
+    combined_params = params + params2
+    query = build_avg_query(
+        'applicants', ['gpa'], combined_clause, limit=QUERY_LIMIT
+    )
+    cur.execute(query, combined_params)
     metrics['bu_phd'] = cur.fetchone()[0]
 
     return metrics
+
 
 def _print_metrics(metrics):
     """
@@ -101,7 +142,8 @@ def _print_metrics(metrics):
     print(f"International count: {metrics['international_count']}")
     print(f"US count: {metrics['us_count']}")
     print(f"Other count: {metrics['other_count']}")
-    print(f"Percent International: {metrics['percent_international']:.2f}%")
+    pct_int = metrics['percent_international']
+    print(f"Percent International: {pct_int:.2f}%")
     avg_metrics = [
         f"Average GPA: {metrics['avg_metrics'][0]}",
         f"Average GRE: {metrics['avg_metrics'][1]}",
@@ -113,10 +155,23 @@ def _print_metrics(metrics):
     print(f"Acceptance count: {metrics['acceptance_count']}")
     print(f"Acceptance percent: {metrics['acceptance_percent']:.2f}%")
     print(f"Average GPA Acceptance: {metrics['avg_gpa_accepted']:.2f}")
-    print(f"JHU Masters Computer Science count: {metrics['jhu_masters_cs_count']}")
-    print(f"Georgetown PhD 2025 Computer Science count: {metrics['gtu_phd_25']}")
-    print(f"UChicago Masters 2023 Computer Science count: {metrics['uc_cs_23']}")
-    print(f"Average GPA of PhD at Boston University: {metrics['bu_phd']:.2f}")
+    print(
+        f"JHU Masters Computer Science count: "
+        f"{metrics['jhu_masters_cs_count']}"
+    )
+    print(
+        f"Georgetown PhD 2025 Computer Science count: "
+        f"{metrics['gtu_phd_25']}"
+    )
+    print(
+        f"UChicago Masters 2023 Computer Science count: "
+        f"{metrics['uc_cs_23']}"
+    )
+    print(
+        f"Average GPA of PhD at Boston University: "
+        f"{metrics['bu_phd']:.2f}"
+    )
+
 
 def analyze_applicant_data():
     """
@@ -135,6 +190,7 @@ def analyze_applicant_data():
                 metrics = _fetch_metrics(cur)
 
     _print_metrics(metrics)
+
 
 if __name__ == "__main__":
     analyze_applicant_data()

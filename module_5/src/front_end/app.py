@@ -7,7 +7,21 @@ import subprocess
 import threading
 from flask import Flask, render_template, redirect, url_for, flash
 import psycopg_pool
-# pylint: disable=W0603, W0718, W0602, R0914
+from module_5.src.sql_utils import (
+    build_count_query, build_avg_query,
+    build_where_equals, build_where_like,
+    build_where_not_in, build_where_and
+)
+from module_5.src.query_helpers import (
+    query_american_fall_2025_gpa,
+    query_fall_2025_accepted_count,
+    query_fall_2025_accepted_gpa,
+    query_university_program_degree,
+    query_university_program_degree_term,
+    query_avg_all_metrics
+)
+
+# pylint: disable=W0603, W0718, W0602, R0914, R0915
 
 
 # Initialize the Flask application.
@@ -17,9 +31,13 @@ app.secret_key = "supersecretkey"  # Needed for flash messages.
 # Use a connection pool for efficient database connections.
 pool = psycopg_pool.ConnectionPool(os.environ['DATABASE_URL'])
 
-# Lock for safe concurrent access to shared resources like the SCRAPING_IN_PROGRESS flag.
+# Lock for safe concurrent access to shared resources.
 scrape_lock = threading.Lock()
 SCRAPING_IN_PROGRESS = False
+
+# Add a query result limit for safety
+QUERY_LIMIT = 1000000
+
 
 def run_scraper():
     """
@@ -39,11 +57,14 @@ def run_scraper():
         print("Scraping and reloading successful.")
     except Exception as e:
         print("Scraping failed:", e)
-        # Use a category like "danger" or "error" for styling in the template.
-        flash("Scraping failed: An error occurred during the update process.", "danger")
+        flash(
+            "Scraping failed: An error occurred during the update process.",
+            "danger"
+        )
     finally:
         with scrape_lock:
             SCRAPING_IN_PROGRESS = False
+
 
 @app.route("/pull", methods=["POST"])
 def pull_data():
@@ -56,7 +77,10 @@ def pull_data():
     global SCRAPING_IN_PROGRESS
     with scrape_lock:
         if SCRAPING_IN_PROGRESS:
-            flash("A scrape is already running. Please wait until it finishes.", "warning")
+            flash(
+                "A scrape is already running. Please wait until it finishes.",
+                "warning"
+            )
             return redirect(url_for("index"))
 
         # Start the scraper in a background thread.
@@ -65,6 +89,7 @@ def pull_data():
         flash("Scraping started! This may take a few minutes.", "info")
 
     return redirect(url_for("index"))
+
 
 @app.route("/update", methods=["POST"])
 def update_analysis():
@@ -78,135 +103,176 @@ def update_analysis():
     global SCRAPING_IN_PROGRESS
     with scrape_lock:
         if SCRAPING_IN_PROGRESS:
-            flash("Cannot update analysis while scraping is in progress.", "warning")
+            flash(
+                "Cannot update analysis while scraping is in progress.",
+                "warning"
+            )
             return redirect(url_for("index"))
 
     # Re-render the index page with a success message.
     flash("Analysis updated with the latest database results.", "success")
     return redirect(url_for("index"))
 
+
 @app.route('/')
 def index():
     """
     Handles the main index page, displaying analysis from the dataset.
 
-    This function connects to the database, executes several queries to fetch
-    analytics, and passes the results to the 'index.html' template for rendering.
+    This function connects to the database, executes several queries to
+    fetch analytics, and passes the results to the 'index.html' template
+    for rendering.
     """
     conn = pool.getconn()
     context = {}
     try:
         with conn.cursor() as cur:
             # Query 1: Count of all applicants.
-            cur.execute("SELECT COUNT(*) FROM applicants;")
+            query = build_count_query('applicants', limit=QUERY_LIMIT)
+            cur.execute(query)
             total_count = cur.fetchone()[0]
 
             # Query 2: Count of international applicants.
-            cur.execute(
-                "SELECT COUNT(*) FROM applicants WHERE us_or_international = 'International';"
+            where_clause, params = build_where_equals(
+                'us_or_international', 'International'
             )
+            query = build_count_query(
+                'applicants', where_clause, limit=QUERY_LIMIT
+            )
+            cur.execute(query, params)
             international_count = cur.fetchone()[0]
 
             # Query 3: Count of American applicants.
-            cur.execute(
-                "SELECT COUNT(*) FROM applicants WHERE us_or_international = 'American';"
+            where_clause, params = build_where_equals(
+                'us_or_international', 'American'
             )
-            # us_count = cur.fetchone()[0]
+            query = build_count_query(
+                'applicants', where_clause, limit=QUERY_LIMIT
+            )
+            cur.execute(query, params)
 
-            # Query 4: Count of neither American nor international applicants.
-            cur.execute(
-                "SELECT COUNT(*) FROM applicants "
-                "WHERE us_or_international NOT IN ('International','American');"
+            # Query 4: Count of neither American nor international.
+            where_clause, params = build_where_not_in(
+                'us_or_international', ['International', 'American']
             )
-            # other_count = cur.fetchone()[0]
+            query = build_count_query(
+                'applicants', where_clause, limit=QUERY_LIMIT
+            )
+            cur.execute(query, params)
 
             # Query 5: Percentage of international students.
-            percent_international = (
-                (international_count / total_count * 100) if total_count else 0
-            )
+            if total_count:
+                percent_international = (
+                    international_count / total_count * 100
+                )
+            else:
+                percent_international = 0
 
             # Query 6: Average GPA, GRE, GRE V, GRE AW.
-            cur.execute(
-                "SELECT AVG(gpa), AVG(gre), AVG(gre_v), AVG(gre_aw) FROM applicants "
-                "WHERE gpa IS NOT NULL AND gre IS NOT NULL "
-                "AND gre_v IS NOT NULL AND gre_aw IS NOT NULL;"
-            )
-            avg_metrics = cur.fetchone() or (None, None, None, None)
+            avg_metrics = query_avg_all_metrics(cur, QUERY_LIMIT)
 
             # Query 7: Average GPA of American students in Fall 2025.
-            cur.execute(
-                "SELECT AVG(gpa) FROM applicants WHERE us_or_international = 'American' "
-                "AND term = 'Fall 2025' AND gpa IS NOT NULL;"
+            avg_gpa_american = query_american_fall_2025_gpa(
+                cur, QUERY_LIMIT
             )
-            avg_gpa_american = cur.fetchone()[0]
 
-            # Query 8 & 9: Acceptance count and percentage for Fall 2025.
-            cur.execute("SELECT COUNT(*) FROM applicants WHERE term = 'Fall 2025';")
+            # Query 8: Fall 2025 total count
+            where_clause, params = build_where_equals('term', 'Fall 2025')
+            query = build_count_query(
+                'applicants', where_clause, limit=QUERY_LIMIT
+            )
+            cur.execute(query, params)
             fall_2025_total_count = cur.fetchone()[0]
 
-            cur.execute(
-                "SELECT COUNT(*) FROM applicants "
-                "WHERE term = 'Fall 2025' AND status LIKE 'Accepted%';"
+            # Query 9: Acceptance count for Fall 2025.
+            acceptance_count = query_fall_2025_accepted_count(
+                cur, QUERY_LIMIT
             )
-            acceptance_count = cur.fetchone()[0]
 
-            acceptance_percent = (
-                (acceptance_count / fall_2025_total_count * 100)
-                if fall_2025_total_count
-                else 0
-            )
+            if fall_2025_total_count:
+                acceptance_percent = (
+                    acceptance_count / fall_2025_total_count * 100
+                )
+            else:
+                acceptance_percent = 0
 
             # Query 10: Average GPA of accepted applicants in Fall 2025.
-            cur.execute(
-                "SELECT AVG(gpa) FROM applicants WHERE term = 'Fall 2025' "
-                "AND status LIKE 'Accepted%' AND gpa IS NOT NULL;"
+            avg_gpa_accepted = query_fall_2025_accepted_gpa(
+                cur, QUERY_LIMIT
             )
-            avg_gpa_accepted = cur.fetchone()[0]
 
             # Query 11: JHU Masters Computer Science count.
-            cur.execute(
-                "SELECT COUNT(*) FROM applicants "
-                "WHERE llm_generated_university = 'Johns Hopkins University' "
-                "AND degree = 'Masters' AND llm_generated_program = 'Computer Science';"
+            jhu_masters_cs_count = query_university_program_degree(
+                cur, 'Johns Hopkins University', 'Masters',
+                'Computer Science', QUERY_LIMIT
             )
-            jhu_masters_cs_count = cur.fetchone()[0]
 
-            # Query 12: Georgetown University, PhD in Computer Science, 2025 count.
-            cur.execute(
-                "SELECT COUNT(*) FROM applicants "
-                "WHERE llm_generated_university = 'Georgetown University' "
-                "AND degree = 'PhD' AND llm_generated_program = 'Computer Science' "
-                "AND term LIKE '%2025';"
+            # Query 12: Georgetown University, PhD in CS, 2025 count.
+            gtu_phd_25 = query_university_program_degree_term(
+                cur, 'Georgetown University', 'PhD',
+                'Computer Science', '%2025', QUERY_LIMIT
             )
-            gtu_phd_25 = cur.fetchone()[0]
 
-            # Query 13: How many accepted entries from 2023 for UChicago Masters CS.
-            cur.execute(
-                "SELECT COUNT(*) FROM applicants "
-                "WHERE llm_generated_university = 'University of Chicago' "
-                "AND degree = 'Masters' AND llm_generated_program = 'Computer Science' "
-                "AND term LIKE '%2023' AND status LIKE 'Accepted%';"
+            # Query 13: UChicago Masters CS 2023 accepted count.
+            clause1, params1 = build_where_equals(
+                'llm_generated_university', 'University of Chicago'
             )
+            clause2, params2 = build_where_equals('degree', 'Masters')
+            clause3, params3 = build_where_equals(
+                'llm_generated_program', 'Computer Science'
+            )
+            clause4, params4 = build_where_like('term', '%2023')
+            clause5, params5 = build_where_like('status', 'Accepted%')
+            where_clause, params = build_where_and([
+                (clause1, params1), (clause2, params2),
+                (clause3, params3), (clause4, params4), (clause5, params5)
+            ])
+            query = build_count_query(
+                'applicants', where_clause, limit=QUERY_LIMIT
+            )
+            cur.execute(query, params)
             uc_cs_23 = cur.fetchone()[0]
 
-            # Query 14: What is the average admit GPA of PhD admits in Boston University?
-            cur.execute(
-                "SELECT AVG(gpa) FROM applicants "
-                "WHERE llm_generated_university = 'Boston University' "
-                "AND degree = 'PhD' AND status LIKE 'Accepted%';")
+            # Query 14: Average admit GPA of PhD at Boston University.
+            clause1, params1 = build_where_equals(
+                'llm_generated_university', 'Boston University'
+            )
+            clause2, params2 = build_where_equals('degree', 'PhD')
+            clause3, params3 = build_where_like('status', 'Accepted%')
+            where_clause, params = build_where_and([
+                (clause1, params1), (clause2, params2), (clause3, params3)
+            ])
+            query = build_avg_query(
+                'applicants', ['gpa'], where_clause, limit=QUERY_LIMIT
+            )
+            cur.execute(query, params)
             bu_phd = cur.fetchone()[0]
 
             # Populate the context dictionary with the fetched data.
             context = {
                 'applicant_count': total_count,
                 'percent_international': round(percent_international, 2),
-                'avg_gpa': round(avg_metrics[0], 2) if avg_metrics[0] else 'N/A',
-                'avg_gre': round(avg_metrics[1], 2) if avg_metrics[1] else 'N/A',
-                'avg_gre_v': round(avg_metrics[2], 2) if avg_metrics[2] else 'N/A',
-                'avg_gre_aw': round(avg_metrics[3], 2) if avg_metrics[3] else 'N/A',
-                'avg_gpa_american': round(avg_gpa_american, 2) if avg_gpa_american else 'N/A',
+                'avg_gpa': (
+                    round(avg_metrics[0], 2) if avg_metrics[0] else 'N/A'
+                ),
+                'avg_gre': (
+                    round(avg_metrics[1], 2) if avg_metrics[1] else 'N/A'
+                ),
+                'avg_gre_v': (
+                    round(avg_metrics[2], 2) if avg_metrics[2] else 'N/A'
+                ),
+                'avg_gre_aw': (
+                    round(avg_metrics[3], 2) if avg_metrics[3] else 'N/A'
+                ),
+                'avg_gpa_american': (
+                    round(avg_gpa_american, 2)
+                    if avg_gpa_american else 'N/A'
+                ),
                 'acceptance_percent': round(acceptance_percent, 2),
-                'avg_gpa_accepted': round(avg_gpa_accepted, 2) if avg_gpa_accepted else 'N/A',
+                'avg_gpa_accepted': (
+                    round(avg_gpa_accepted, 2)
+                    if avg_gpa_accepted else 'N/A'
+                ),
                 'jhu_masters_cs_count': jhu_masters_cs_count,
                 'gtu_phd_25': gtu_phd_25,
                 'uc_cs_23': uc_cs_23,
@@ -217,6 +283,7 @@ def index():
 
     finally:
         pool.putconn(conn)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
