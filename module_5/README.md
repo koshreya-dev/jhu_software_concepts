@@ -19,7 +19,7 @@ generated dependency graph of app.py and published a pdf explanation
 updated requirement files
 
 ### snyk
-checked for vulnerabilites using snyk
+checked for vulnerabilites using snyk. There are NO DOCUMENTED VULNERABILITIES, per the pdf attached.
 
 ### References:
 Lecture notes, course readings, documentation for pylint, snyk, and pydeps.
